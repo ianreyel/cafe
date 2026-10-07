@@ -1,7 +1,7 @@
 <?php 
 require_once __DIR__ . '/../config/connection.php';
-if(isset($_SESSION['user_id'])) {
-    header('Location: home.php');
+if(!isset($_SESSION['user_id']) || $_SESSION['ds_function'] !== 'admin') {
+    header('Location: route.php');
     exit();
 }
 ?>
@@ -10,47 +10,45 @@ if(isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Cadastro de Produto</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container login-container">
-        <div class="login-left">
-            <img src="icons/logo.jpeg" alt="Logo" class="login-logo">
-        </div>
-        <div class="login-right">
-            <h2 class="login-title">Login</h2>
+        <!-- Mantendo a estrutura visual que você já criou -->
+        <div class="login-right" style="width: 100%;">
+            <h2 class="login-title">Novo Produto</h2>
 
-           
-            <form id="formLogin">
+            <form id="formProduto">
                 <div class="input-group">
-                    <label>Usuário</label>
-                    <input type="text" name="username" required autofocus>
+                    <label>Nome do Produto</label>
+                    <input type="text" name="nome" placeholder="Ex: Coca-Cola 350ml" required autofocus>
                 </div>
                 <br>
                 <div class="input-group">
-                    <label>Senha</label>
-                    <input type="password" name="password" required>
+                    <label>Preço de Venda (R$)</label>
+                    <input type="number" name="preco" step="0.01" min="0.01" placeholder="0,00" required>
                 </div>
                 
-                <button type="submit" class="btn-entrar">Entrar</button>
+                <button type="submit" class="btn-entrar" style="margin-top: 20px;">Salvar Produto</button>
             </form>
             
+            <!-- Mensagem de feedback do JS -->
             <div id="mensagem-servidor" style="margin-top: 15px; font-weight: bold; text-align: center;"></div> 
         </div>
     </div>
 
     <script>
-        document.getElementById('formLogin').addEventListener('submit', function (e) {
+        document.getElementById('formProduto').addEventListener('submit', function (e) {
             e.preventDefault(); 
             
             let formData = new FormData(this);
             let divMsg = document.getElementById('mensagem-servidor');
             
-            divMsg.innerHTML = "Autenticando...";
+            divMsg.innerHTML = "Salvando...";
             divMsg.style.color = "gray";
 
-            fetch('../controllers/AuthLogin.php', {
+            fetch('../controllers/ProdutoController.php', {
                 method: 'POST',
                 body: formData
             })
@@ -60,8 +58,8 @@ if(isset($_SESSION['user_id'])) {
                 
                 if (data.status === 'sucesso') {
                     divMsg.style.color = "green";
-                    // Aguarda meio segundo para o usuário ler a mensagem e redireciona
-                    window.location.href = data.redirect; 
+                    this.reset(); // Limpa os campos para cadastrar o próximo rápido
+                    document.querySelector('input[name="nome"]').focus(); // Volta o cursor pro nome
                 } else {
                     divMsg.style.color = "red";
                 }
